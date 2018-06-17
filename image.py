@@ -9,7 +9,7 @@ import sys
 file1 = sys.argv[1]
 file2 = sys.argv[2]
 facial_features_cordinates = {}
-
+print(file1,file2)
 # define a dictionary that maps the indexes of the facial
 # landmarks to specific face regions
 FACIAL_LANDMARKS_INDEXES = OrderedDict([
@@ -82,14 +82,24 @@ rets = detector(gray, 1)
 
 # loop over the face detections
 for (i, ret) in enumerate(rets):
-	left = ret.left()
-	top = ret.top()
-	right = ret.right()
-	down = ret.bottom()
-	show = cv2.imread(file2)
-	show = cv2.resize(show,(ret.width(),ret.height()))
-	x_offset,y_offset=left,top
-	image[top:down+1,left:right+1] = show
+    left = ret.left()
+    top = ret.top()
+    right = ret.right()
+    down = ret.bottom()
+    show = cv2.imread(file2)
+    show = cv2.resize(show,(down+1-top,right+1-left))
+    img2gray = cv2.cvtColor(show,cv2.COLOR_BGR2GRAY)
+    img2gray = cv2.bitwise_not(img2gray)
+    ret, mask = cv2.threshold(img2gray, 10, 255, cv2.THRESH_BINARY)
+    mask_inv = cv2.bitwise_not(mask)
+    img1_bg = cv2.bitwise_and(image[top:down+1,left:right+1],image[top:down+1,left:right+1],mask = mask_inv)
+    img2_fg = cv2.bitwise_and(show,show,mask = mask)
+    image[top:down+1,left:right+1] = cv2.add(img1_bg,img2_fg)
+    # for k in range(top,down+1,1):
+    #     for j in range(left,right+1,1):
+    #         if not (show[k-top,j-right,0] == 255 and show[k-top,j-right,1] == 255 and show[k-top,j-right,2] == 255):
+    #             image[k,j] = show[k-top,j-right]
+   # image[top:down+1,left:right+1] = show
 	# determine the facial landmarks for the face region, then
 	# convert the landmark (x, y)-coordinates to a NumPy array
 	# shape = predictor(gray, ret)
@@ -97,11 +107,8 @@ for (i, ret) in enumerate(rets):
 	# for (x, y) in shape:
 	# 	cv2.circle(image, (x, y), 1, (0, 0, 255), -1)
 
-# show = cv2.imread("show.jpg")
-# show = cv2.resize(show,(500,500))
 cv2.imshow('image',image)
-# cv2.imshow('image',dst)
-cv2.waitKey(1000)
+cv2.waitKey(5000)
 cv2.destroyWindow('image')
 #############
 # Reference #
