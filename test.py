@@ -1,7 +1,6 @@
 import cv2
 from collections import OrderedDict
 import numpy as np
-import cv2
 import dlib
 import imutils
 
@@ -18,6 +17,23 @@ FACIAL_LANDMARKS_INDEXES = OrderedDict([
     ("Nose", (27, 35)),
     ("Jaw", (0, 17))
 ])
+
+def AddMask(ret,image,file2):
+    left = int(ret.left()) if ret.left() > 0 else 0
+    top = int(ret.top()) if ret.top() > 0 else 0
+    right = int(ret.right()) if ret.right() < image.shape[1]-1 else image.shape[1]-1
+    down = int(ret.bottom()) if ret.bottom() < image.shape[0]-1 else image.shape[0]-1
+    show = cv2.imread(file2)
+    show = cv2.resize(show,(right+1-left,down+1-top))
+    img2gray = cv2.cvtColor(show,cv2.COLOR_BGR2GRAY)
+    img2gray = cv2.bitwise_not(img2gray)
+    ret, mask = cv2.threshold(img2gray, 10, 255, cv2.THRESH_BINARY)
+    mask_inv = cv2.bitwise_not(mask)
+    # print("diff = ",top,down,right,left,"mask = ",mask_inv.shape,image[top:down+1,left:right+1].shape)
+    img1_bg = cv2.bitwise_and(image[top:down+1,left:right+1],image[top:down+1,left:right+1],mask = mask_inv)
+    img2_fg = cv2.bitwise_and(show,show,mask = mask)
+    image[top:down+1,left:right+1] = cv2.add(img1_bg,img2_fg)
+    return image
 
 def shape_to_numpy_array(shape, dtype="int"):
     # initialize the list of (x, y)-coordinates
@@ -86,25 +102,25 @@ else:
     rval = False
 
 while rval:
-	image = imutils.resize(frame, width=500)
-	gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-	# detect faces in the grayscale image
-	rets = detector(gray, 1)
-
-	# loop over the face detections
-	for (i, ret) in enumerate(rets):
-		# determine the facial landmarks for the face region, then
-		# convert the landmark (x, y)-coordinates to a NumPy array
-		shape = predictor(gray, ret)
-		shape = shape_to_numpy_array(shape)
-
-		for (x, y) in shape:
-			cv2.circle(image, (x, y), 1, (0, 0, 255), -1)
-	# frame = output
-	# add
-	cv2.imshow("preview", image)
-	cv2.waitKey(100)			# latency
-	rval, frame = vc.read()		
+    # image = cv2.resize(frame,(500,500))
+    image = imutils.resize(frame, width=500)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    # detect faces in the grayscale image
+    rets = detector(gray, 1)
+    # loop over the face detections
+    for (i, ret) in enumerate(rets):
+        # determine the facial landmarks for the face region, then
+        # convert the landmark (x, y)-coordinates to a NumPy array
+        shape = predictor(gray, ret)
+        shape = shape_to_numpy_array(shape)
+        image = AddMask(ret,image,"show.jpg")
+        # for (x, y) in shape:
+        # 	cv2.circle(image, (x, y), 1, (0, 0, 255), -1)
+    # frame = output
+    # add
+    cv2.imshow("preview", image)
+    cv2.waitKey(100)			# latency
+    rval, frame = vc.read()
 cv2.destroyWindow("preview")
 
 #############
