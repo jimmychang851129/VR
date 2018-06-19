@@ -8,7 +8,12 @@
     >使用方法
     > python3 image.py [image1 path] [image2 path]
     > EX : python3 image.py test.jpg show.jpg
+- mask/
+放面具圖的地方，就是從這裡random選的
+- faceMorph.py :
+就是之前說可以試試看讓面具效果變好的做法(image morphing)，可以試試看，但不知道效果如何
 
 ## 工作
 - 蒐集更多京劇面具照片去掉白色部分放到城市跑跑看
-- 目前放了一張川劇照片(show.jpg)到test.py上，算是有一個成果，但是效果不怎麼好，可以跑跑看
+- 目前random的出現面具，只要一沒感測到到下次感測到會換面具，所以可以用手擋住臉，接著就會出現不同面具
+- 目前算是有一個階段成品，看要不要做做看face morphing

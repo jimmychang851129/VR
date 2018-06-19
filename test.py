@@ -3,6 +3,7 @@ from collections import OrderedDict
 import numpy as np
 import dlib
 import imutils
+import random
 
 facial_features_cordinates = {}
 
@@ -101,6 +102,8 @@ if vc.isOpened(): # try to get the first frame
 else:
     rval = False
 
+FindFace = False
+mask_num = 0
 while rval:
     # image = cv2.resize(frame,(500,500))
     image = imutils.resize(frame, width=500)
@@ -108,12 +111,17 @@ while rval:
     # detect faces in the grayscale image
     rets = detector(gray, 1)
     # loop over the face detections
+    if len(rets) > 0 and FindFace == False:
+        FindFace = True
+        mask_num = (mask_num+1)%10
+    if len(rets) == 0 and FindFace == True:
+        FindFace = False
     for (i, ret) in enumerate(rets):
         # determine the facial landmarks for the face region, then
         # convert the landmark (x, y)-coordinates to a NumPy array
         shape = predictor(gray, ret)
         shape = shape_to_numpy_array(shape)
-        image = AddMask(ret,image,"show.jpg")
+        image = AddMask(ret,image,"./mask/mask%d"%(mask_num)+".jpg")
         # for (x, y) in shape:
         # 	cv2.circle(image, (x, y), 1, (0, 0, 255), -1)
     # frame = output
