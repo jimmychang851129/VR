@@ -102,15 +102,17 @@ if vc.isOpened(): # try to get the first frame
 else:
     rval = False
 
+# FindFace = [False,False,False,False,False]
+# mask_num = [0,0,0,0,0]
 FindFace = False
 mask_num = 0
 while rval:
     # image = cv2.resize(frame,(500,500))
-    image = imutils.resize(frame, width=500)
+    image = imutils.resize(frame, width=800)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     # detect faces in the grayscale image
     rets = detector(gray, 1)
-    # loop over the face detections
+    # # loop over the face detections
     if len(rets) > 0 and FindFace == False:
         FindFace = True
         mask_num = (mask_num+1)%10
@@ -127,7 +129,7 @@ while rval:
     # frame = output
     # add
     cv2.imshow("preview", image)
-    cv2.waitKey(100)			# latency
+    cv2.waitKey(50)			# latency
     rval, frame = vc.read()
 cv2.destroyWindow("preview")
 
