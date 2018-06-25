@@ -70,7 +70,7 @@ def morphTriangle(img1, img2, img, t1, t2, t, alpha) :
     tRect = []
 
 
-    for i in xrange(0, 3):
+    for i in range(0, 3):
         tRect.append(((t[i][0] - r[0]),(t[i][1] - r[1])))
         t1Rect.append(((t1[i][0] - r1[0]),(t1[i][1] - r1[1])))
         t2Rect.append(((t2[i][0] - r2[0]),(t2[i][1] - r2[1])))
@@ -101,7 +101,7 @@ if __name__ == '__main__' :
     predictor = dlib.shape_predictor("../shape_predictor_68_face_landmarks.dat")
 
     filename1 = sys.argv[1]
-    filename2 = 'mask.jpg'
+    filename2 = sys.argv[2]
     alpha = 0.2
     
     # Read images
@@ -134,7 +134,7 @@ if __name__ == '__main__' :
     points = [];
 
     # Compute weighted average point coordinates
-    for i in xrange(0, len(points1)):
+    for i in range(0, len(points1)):
         x = ( 1 - alpha ) * points1[i][0] + alpha * points2[i][0]
         y = ( 1 - alpha ) * points1[i][1] + alpha * points2[i][1]
         points.append((x,y))
