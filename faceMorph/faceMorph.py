@@ -7,44 +7,39 @@ import dlib
 import imutils
 
 def append_new_point(size, point):
+    offset = 33
     point.append((0,0))
     point.append((size[1]/2,0))
     point.append((size[1]-1,0))
     point.append((0, size[0]/2))
-    point.append((0, size[0]-16))
-    point.append((size[1]/2, size[0]-16))
+    point.append((0, size[0]-offset))
+    point.append((size[1]/2, size[0]-offset))
     point.append((size[1]-1,size[0]/2))
-    point.append((size[1],size[0]-16))
+    point.append((size[1],size[0]-offset))
     '''
     for i in range(3):
         point.append((0,0))
     '''
 def shape_to_numpy_array(shape, dtype="int"):
-    # initialize the list of (x, y)-coordinates
     coordinates = np.zeros((68, 2), dtype=dtype)
 
-    # loop over the 68 facial landmarks and convert them
-    # to a 2-tuple of (x, y)-coordinates
     for i in range(0, 68):
         coordinates[i] = (shape.part(i).x, shape.part(i).y)
 
-    # return the list of (x, y)-coordinates
     return coordinates
 
 # Read points from text file
 def readPoints(path) :
-    # Create an array of points.
+
     points = [];
-    # Read points
     with open(path) as file :
+
         for line in file :
             x, y = line.split()
             points.append((int(x), int(y)))
 
     return points
 
-# Apply affine transform calculated using srcTri and dstTri to src and
-# output an image of size.
 def applyAffineTransform(src, srcTri, dstTri, size) :
     
     # Given a pair of triangles, find the affine transform.
@@ -56,7 +51,6 @@ def applyAffineTransform(src, srcTri, dstTri, size) :
     return dst
 
 
-# Warps and alpha blends triangular regions from img1 and img2 to img
 def morphTriangle(img1, img2, img, t1, t2, t, alpha) :
 
     # Find bounding rectangle for each triangle
@@ -89,8 +83,6 @@ def morphTriangle(img1, img2, img, t1, t2, t, alpha) :
 
     # Alpha blend rectangular patches
     imgRect = (1.0 - alpha) * warpImage1 + alpha * warpImage2
-    #print(imgRect.shape)
-    #print(img[r[1]:r[1]+r[3], r[0]:r[0]+r[2]].shape)
 
     # Copy triangular region of the rectangular patch to the output image
     img[r[1]:r[1]+r[3], r[0]:r[0]+r[2]] = img[r[1]:r[1]+r[3], r[0]:r[0]+r[2]] * ( 1 - mask ) + imgRect * mask
@@ -102,13 +94,11 @@ if __name__ == '__main__' :
 
     filename1 = sys.argv[1]
     filename2 = sys.argv[2]
-    alpha = 0.2
+    alpha = 0.35
     
     # Read images
     img1 = cv2.imread(filename1);
     img2 = cv2.imread(filename2);
-    #size1 = img1.shape
-    #img2 = imutils.resize(img2, width=size1[1], height=size1[0])
 
     # get points by dlib
     points1 = []
@@ -116,8 +106,6 @@ if __name__ == '__main__' :
 
     rets = detector(gray, 1)
     for (i, ret) in enumerate(rets):
-        # determine the facial landmarks for the face region, then
-        # convert the landmark (x, y)-coordinates to a NumPy array
         shape = predictor(gray, ret)
         shape = shape_to_numpy_array(shape)
         for (x, y) in shape:
@@ -140,7 +128,6 @@ if __name__ == '__main__' :
         points.append((x,y))
 
 
-    # Allocate space for final output
     imgMorph = np.zeros(img1.shape, dtype = img1.dtype)
 
     # Read triangles from tri.txt
@@ -156,16 +143,6 @@ if __name__ == '__main__' :
             t2 = [points2[x], points2[y], points2[z]]
             t = [ points[x], points[y], points[z] ]
 
-            # Morph one triangle at a time.
             morphTriangle(img1, img2, imgMorph, t1, t2, t, alpha)
-    '''
-    tmp_size = imgMorph.shape
-    for i in range(tmp_size[0]):
-        for j in range(tmp_size[1]):
-            if imgMorph[i][j][0] == 0 and imgMorph[i][j][1] == 0 and imgMorph[i][j][2] == 0:
-                imgMorph[i][j] = img1[i][j]
-    '''
-    #Display Result
-    #cv2.imshow("Morphed Face", np.uint8(imgMorph))
+
     cv2.imwrite("output.jpg", np.uint8(imgMorph))
-    #cv2.waitKey(50000)
